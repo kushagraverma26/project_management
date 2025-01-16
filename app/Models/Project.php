@@ -15,9 +15,7 @@ class Project extends Model
         'status'
     ];
 
-    /**
-     * A Project has many Tasks.
-     */
+    // A Project has many Tasks.
     public function tasks()
     {
         return $this->hasMany(Task::class);

@@ -8,23 +8,21 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
+
 class TaskController extends Controller
 {
-    /**
-     * GET /api/tasks
-     * List all tasks (optional).
-     */
+    // Endpoint to List all tasks.
+    // GET /api/tasks
     public function index()
     {
-        // List all tasks
         $tasks = Task::all();
         return response()->json($tasks, Response::HTTP_OK);
     }
 
-    /**
-     * GET /api/projects/{project_id}/tasks
-     * List all tasks for a specific project.
-     */
+    // Endpoint to List all tasks for a specific project.
+    // GET /api/projects/{project_id}/tasks
     public function tasksByProject($projectId)
     {
         $project = Project::find($projectId);
@@ -36,35 +34,24 @@ class TaskController extends Controller
         return response()->json($tasks, Response::HTTP_OK);
     }
 
-    /**
-     * POST /api/projects/{project_id}/tasks
-     * Create a new task under a project.
-     */
-    public function store(Request $request, $projectId)
+    // Endpoint to Create a new task under a project.
+    // POST /api/projects/{project_id}/tasks
+    public function store(StoreTaskRequest $request, $projectId)
     {
         $project = Project::find($projectId);
         if (!$project) {
-            return response()->json(['message' => 'Project not found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' => 'Project not found'], 404);
         }
 
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'assigned_to' => 'nullable|string|max:255',
-            'due_date' => 'nullable|date',
-            'status' => ['required', Rule::in(['to_do', 'in_progress', 'done'])]
-        ]);
-
+        $validatedData = $request->validated();
         $validatedData['project_id'] = $projectId;
-        $task = Task::create($validatedData);
 
-        return response()->json($task, Response::HTTP_CREATED);
+        $task = Task::create($validatedData);
+        return response()->json($task, 201);
     }
 
-    /**
-     * GET /api/tasks/{id}
-     * Show details of a single task.
-     */
+    // Endpoint to Show details of a single task.
+    // GET /api/tasks/{id}
     public function show($id)
     {
         $task = Task::find($id);
@@ -74,33 +61,21 @@ class TaskController extends Controller
         return response()->json($task, Response::HTTP_OK);
     }
 
-    /**
-     * PUT /api/tasks/{id}
-     * Update an existing task.
-     */
-    public function update(Request $request, $id)
+    // Endpoint to Update an existing task.
+    // PUT /api/tasks/{id}
+    public function update(UpdateTaskRequest $request, $id)
     {
         $task = Task::find($id);
         if (!$task) {
-            return response()->json(['message' => 'Task not found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' => 'Task not found'], 404);
         }
 
-        $validatedData = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'assigned_to' => 'nullable|string|max:255',
-            'due_date' => 'nullable|date',
-            'status' => ['sometimes', 'required', Rule::in(['to_do', 'in_progress', 'done'])]
-        ]);
-
-        $task->update($validatedData);
-        return response()->json($task, Response::HTTP_OK);
+        $task->update($request->validated());
+        return response()->json($task, 200);
     }
 
-    /**
-     * DELETE /api/tasks/{id}
-     * Delete a task.
-     */
+    // Endpoint to Delete a task.
+    // DELETE /api/tasks/{id}
     public function destroy($id)
     {
         $task = Task::find($id);

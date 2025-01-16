@@ -7,38 +7,29 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
+
 class ProjectController extends Controller
 {
-    /**
-     * GET /api/projects
-     * List all projects.
-     */
+    // Endpoint to List all projects.
+    // GET /api/projects
     public function index()
     {
         $projects = Project::all();
         return response()->json($projects, Response::HTTP_OK);
     }
 
-    /**
-     * POST /api/projects
-     * Create a new project.
-     */
-    public function store(Request $request)
+    // Endpoint to Create a new project
+    // POST /api/projects
+    public function store(StoreProjectRequest $request)
     {
-        $validatedData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => ['required', Rule::in(['open', 'in_progress', 'completed'])],
-        ]);
-
-        $project = Project::create($validatedData);
-        return response()->json($project, Response::HTTP_CREATED);
+        $project = Project::create($request->validated());
+        return response()->json($project, 201);
     }
 
-    /**
-     * GET /api/projects/{id}
-     * Show details of a single project.
-     */
+    // Endpoint to Show details of a single project
+    // GET /api/projects/{id}
     public function show($id)
     {
         $project = Project::find($id);
@@ -48,31 +39,21 @@ class ProjectController extends Controller
         return response()->json($project, Response::HTTP_OK);
     }
 
-    /**
-     * PUT /api/projects/{id}
-     * Update an existing project.
-     */
-    public function update(Request $request, $id)
+    // Endpoint to Update an existing project.
+    // PUT /api/projects/{id}
+    public function update(UpdateProjectRequest $request, $id)
     {
         $project = Project::find($id);
         if (!$project) {
-            return response()->json(['message' => 'Project not found'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' => 'Project not found'], 404);
         }
 
-        $validatedData = $request->validate([
-            'title' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => ['sometimes', 'required', Rule::in(['open', 'in_progress', 'completed'])],
-        ]);
-
-        $project->update($validatedData);
-        return response()->json($project, Response::HTTP_OK);
+        $project->update($request->validated());
+        return response()->json($project, 200);
     }
 
-    /**
-     * DELETE /api/projects/{id}
-     * Delete a project.
-     */
+    // Endpoint to Delete a project.
+    // DELETE /api/projects/{id}
     public function destroy($id)
     {
         $project = Project::find($id);

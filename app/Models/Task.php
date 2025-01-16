@@ -18,9 +18,7 @@ class Task extends Model
         'status'
     ];
 
-    /**
-     * A Task belongs to a Project.
-     */
+    // A Task belongs to a Project.
     public function project()
     {
         return $this->belongsTo(Project::class);
